@@ -184,3 +184,25 @@ content = file.read()
 file.close()
 
 print(content)
+
+
+
+# __init__
+
+class Student:
+    def __init__(self, name, age):
+        self.name = name
+        self.age = age
+ 
+
+#  method
+class Product:
+    def __init__(self, name, price):
+        self.name = name
+        self.price = price
+
+    def show_price(self):
+        print(f"Product price is {self.price}")
+
+p1 = Product("Laptop", 50000)
+p1.show_price()
