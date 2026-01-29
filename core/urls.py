@@ -7,6 +7,9 @@ urlpatterns = [
     path('api/', views.api_home),
     path('students/create/', views.create_student),
     path('students/', views.get_students),
+    path('students/<int:student_id>/update/', views.update_student),
+    path('students/<int:student_id>/delete/', views.delete_student),
+
 
 
 ]
