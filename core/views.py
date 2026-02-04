@@ -3,6 +3,9 @@ from django.http import HttpResponse, JsonResponse
 from core.models import Student
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
+from rest_framework.decorators import api_view
+from rest_framework.response import Response
+from .serializers import StudentSerializer
 
 
 def home(request):
@@ -20,6 +23,7 @@ def api_home(request):
         "message": "Welcome to Django API",
         "status": "success"
     })
+@csrf_exempt
 def create_student(request):
     if request.method == "POST":
         name = request.POST.get("name")
@@ -41,7 +45,8 @@ def create_student(request):
         return JsonResponse({
             "error": "GET method not allowed. Use POST."
         }, status=400)
-
+    
+@csrf_exempt
 def get_students(request):
     students = Student.objects.all()
 
@@ -111,3 +116,71 @@ def delete_student(request, student_id):
         return JsonResponse({
             "error": "POST method required"
         }, status=400)
+
+@api_view(['GET'])
+def drf_get_students(request):
+    students = Student.objects.all()
+    serializer = StudentSerializer(students, many=True)
+    return Response(serializer.data)
+
+@api_view(['POST'])
+def drf_create_student(request):
+    serializer = StudentSerializer(data=request.data)
+
+    if serializer.is_valid():
+        serializer.save()
+        return Response(
+            {
+                "message": "Student created successfully",
+                "data": serializer.data
+            },
+            status=201
+        )
+
+    return Response(serializer.errors, status=400)
+
+
+@api_view(['PUT', 'PATCH'])
+def drf_update_student(request, student_id):
+    try:
+        student = Student.objects.get(id=student_id)
+    except Student.DoesNotExist:
+        return Response(
+            {"error": "Student not found"},
+            status=404
+        )
+
+    serializer = StudentSerializer(
+        student,
+        data=request.data,
+        partial=True
+    )
+
+    if serializer.is_valid():
+        serializer.save()
+        return Response(
+            {
+                "message": "Student updated successfully",
+                "data": serializer.data
+            }
+        )
+
+    return Response(serializer.errors, status=400)
+
+
+@api_view(['DELETE'])
+def drf_delete_student(request, student_id):
+    try:
+        student = Student.objects.get(id=student_id)
+    except Student.DoesNotExist:
+        return Response(
+            {"error": "Student not found"},
+            status=404
+        )
+
+    student.delete()
+
+    return Response(
+        {"message": "Student deleted successfully"},
+        status=204
+    )
